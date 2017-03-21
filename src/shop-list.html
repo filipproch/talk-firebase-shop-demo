@@ -1,0 +1,173 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/app-route/app-route.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="shop-common-styles.html">
+<link rel="import" href="shop-image.html">
+<link rel="import" href="shop-list-item.html">
+
+<dom-module id="shop-list">
+
+    <template>
+
+        <style include="shop-common-styles">
+
+            .hero-image {
+                position: relative;
+                height: 150px;
+                overflow: hidden;
+                margin-bottom: 32px;
+            }
+
+            .hero-image {
+                --shop-image-img: {
+                    position: absolute;
+                    top: 0;
+                    bottom: 0;
+                    left: -9999px;
+                    right: -9999px;
+                    max-width: none;
+                };
+            }
+
+            .grid {
+                @apply(--layout-horizontal);
+                @apply(--layout-wrap);
+                @apply(--layout-justified);
+                margin: 0 10px 32px 10px;
+                padding: 0;
+                list-style: none;
+            }
+
+            .grid li {
+                -webkit-flex: 1 1;
+                flex: 1 1;
+                -webkit-flex-basis: 33%;
+                flex-basis: 33%;
+                max-width: 33%;
+            }
+
+            .grid a {
+                display: block;
+                text-decoration: none;
+            }
+
+            @media (max-width: 767px) {
+                .hero-image {
+                    display: none;
+                }
+
+                .grid li {
+                    -webkit-flex-basis: 50%;
+                    flex-basis: 50%;
+                    max-width: 50%;
+                }
+            }
+
+        </style>
+
+        <!--
+          app-route provides the name of the category.
+        -->
+        <app-route
+                route="[[route]]"
+                pattern="/:category"
+                data="{{routeData}}">
+        </app-route>
+
+        <firebase-document
+                path="categories/[[routeData.category]]"
+                data="{{category}}">
+        </firebase-document>
+
+        <firebase-query
+            path="goods"
+            order-by-child="category"
+            equal-to="[[routeData.category]]"
+            data="{{goods}}">
+        </firebase-query>
+
+        <header>
+            <h1>[[category.name]]</h1>
+            <span>[[_getPluralizedQuantity(goods.length)]]</span>
+        </header>
+
+        <ul class="grid">
+            <template is="dom-repeat" items="[[goods]]" initial-count="4">
+                <li>
+                    <a href$="[[_getItemHref(item)]]">
+                        <shop-list-item item="[[item]]"></shop-list-item>
+                    </a>
+                </li>
+            </template>
+        </ul>
+    </template>
+
+    <script>
+
+      Polymer({
+
+        is: 'shop-list',
+
+        properties: {
+
+          category: Object,
+
+          route: Object,
+
+          routeData: Object,
+
+          visible: Boolean
+        },
+
+        observers: [
+          '_categoryChanged(routeData.category, category, visible)'
+        ],
+
+        _getListItems: function (items) {
+          // Return placeholder items when the items haven't loaded yet.
+          return items || [{}, {}, {}, {}, {}, {}, {}, {}, {}, {}];
+        },
+
+        _getItemHref: function (item) {
+          return item.$key ? ['/detail', this.routeData.category, item.$key].join('/') : null;
+        },
+
+        _getPluralizedQuantity: function (quantity) {
+          if (!quantity) {
+            return '';
+          }
+          var pluralizedQ = quantity === 1 ? 'item' : 'items';
+          return '(' + quantity + ' ' + pluralizedQ + ')';
+        },
+
+        _categoryChanged: function (categoryKey, category, visible) {
+          if (visible) {
+            if (!category) {
+              //this.fire('show-invalid-url-warning');
+            } else {
+              this.debounce('change-section', function () {
+                // Notify the category and the page's title
+                this.fire('change-section', {
+                  category: categoryKey,
+                  title: category.name
+                });
+              });
+            }
+          }
+        }
+
+      });
+
+    </script>
+
+</dom-module>

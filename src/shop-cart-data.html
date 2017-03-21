@@ -1,0 +1,128 @@
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<dom-module id="shop-cart-data">
+
+    <template>
+        <firebase-query
+                path="/users/[[user.uid]]/cart"
+                data="{{cart}}">
+        </firebase-query>
+
+        <firebase-document
+                path="goods"
+                data="{{goods}}">
+        </firebase-document>
+    </template>
+
+    <script>
+
+      Polymer({
+
+        is: 'shop-cart-data',
+
+        properties: {
+
+          user: {
+            type: Object
+          },
+
+          goods: {
+            type: Object,
+            value: null
+          },
+
+          cart: {
+            type: Array,
+            value: function () {
+              return [];
+            },
+            notify: true
+          },
+
+          numItems: {
+            type: Number,
+            computed: '_computeNumItems(cart.*)',
+            notify: true
+          },
+
+          total: {
+            type: Number,
+            computed: '_computeTotal(cart.*, goods)',
+            notify: true
+          }
+
+        },
+
+        addItem: function (detail) {
+          var entry = this._getCartEntry(detail.item);
+          if (entry !== 0) {
+            detail.quantity += entry.$val;
+          }
+          this.setItem(detail);
+        },
+
+        setItem: function (detail) {
+          if(this.user) {
+            firebase.database()
+              .ref(`/users/${this.user.uid}/cart/${detail.item}`)
+              .set(detail.quantity > 0 ? detail.quantity : null)
+          }
+        },
+
+        clearCart: function () {
+          if(this.user) {
+            firebase.database()
+              .ref(`/users/${this.user.uid}/cart`)
+              .set({});
+          }
+        },
+
+        _computeNumItems: function () {
+          if (this.cart) {
+            return this.cart.reduce(function (total, entry) {
+              return total + entry.quantity;
+            }, 0);
+          }
+
+          return 0;
+        },
+
+        _computeTotal: function () {
+          if (this.cart && this.goods) {
+            console.log('_computeTotal', this.cart, this.goods);
+            return this.cart.reduce((total, entry) => {
+              return total + entry.$val * this.goods[entry.$key].price;
+            }, 0);
+          }
+
+          return 0;
+        },
+
+        _getCartEntry: function (goodId) {
+          if (this.cart) {
+            for (var i = 0; i < this.cart.length; ++i) {
+              var entry = this.cart[i];
+              if (entry.$key === goodId) {
+                return entry;
+              }
+            }
+          }
+
+          return 0;
+        }
+
+      });
+
+    </script>
+
+</dom-module>
