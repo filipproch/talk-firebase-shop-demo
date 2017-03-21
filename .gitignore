@@ -4,5 +4,4 @@ build
 *.iml
 node_modules
 functions/serviceAccount.json
-functions/*.js
 functions/*.js.map
