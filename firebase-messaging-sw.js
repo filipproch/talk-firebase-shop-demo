@@ -9,15 +9,15 @@ firebase.initializeApp({
 
 // Retrieve an instance of Firebase Messaging so that it can handle background
 // messages.
-const messaging = firebase.messaging();
+var messaging = firebase.messaging();
 
 messaging.setBackgroundMessageHandler(function(payload) {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
   // Customize notification here
-  const data = payload.data;
+  var data = payload.data;
 
-  const notificationTitle = 'Your order state changed';
-  const notificationOptions = {
+  var notificationTitle = 'Your order state changed';
+  var notificationOptions = {
     body: `The order is now '${data.state}'.`,
     icon: '/images/shop-icon-128.png',
     tag: 'shop-order-notification'

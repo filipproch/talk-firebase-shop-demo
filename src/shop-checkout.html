@@ -512,13 +512,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             // 2) Remove the code below.
             // 3) Uncomment `this.$.checkoutForm.submit()`.
 
-            this.$.checkoutForm.fire('iron-form-presubmit', null, {bubbles: false});
+            this.$.checkoutForm.fire('iron-form-presubmit', null, { bubbles: false });
 
             this.debounce('_submitForm', function () {
               firebase.database().ref('/orders').push()
                 .set({
-                  goods: this.cart.reduce((goods, entry) => {
-                    goods[entry.$key] = entry.$val;
+                  goods: this.cart.reduce(function (goods, entry) {
+                    goods[ entry.$key ] = entry.$val;
                     return goods;
                   }, {}),
                   timestamp: Date.now(),
@@ -529,23 +529,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
                   },
                   user: this.user.uid
                 })
-                .then(() => {
+                .then(function () {
                   this.$.checkoutForm.fire('iron-form-response', {
                     response: {
                       success: 1,
                       successMessage: 'Checkout complete.'
                     }
-                  }, {bubbles: false});
-                })
-                .catch((e) => {
+                  }, { bubbles: false });
+                }.bind(this))
+                .catch(function (e) {
                   this.$.checkoutForm.fire('iron-form-response', {
                     response: {
                       success: 0,
-                      successMessage: `Checkout failed - ${e.message}`
+                      successMessage: 'Checkout failed - ' + e.message
                     }
-                  }, {bubbles: false});
-                });
-            }, 1000);
+                  }, { bubbles: false });
+                }.bind(this));
+            }.bind(this), 1000);
           }
         },
 
@@ -587,7 +587,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           form.reset();
 
           // Remove the `aria-invalid` attribute from the form inputs.
-          for (var el, i = 0; el = form.elements[i], i < form.elements.length; i++) {
+          for (var el, i = 0; el = form.elements[ i ], i < form.elements.length; i++) {
             el.removeAttribute('aria-invalid');
           }
         },
@@ -600,7 +600,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           var form = this.$.checkoutForm;
           var firstInvalid = false;
 
-          for (var el, i = 0; el = form.elements[i], i < form.elements.length; i++) {
+          for (var el, i = 0; el = form.elements[ i ], i < form.elements.length; i++) {
             if (el.checkValidity()) {
               el.removeAttribute('aria-invalid');
             } else {
@@ -686,12 +686,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         _getEntryName: function (entry, goods) {
-          return goods && goods[entry.$key] ? goods[entry.$key].name : null
+          return goods && goods[ entry.$key ] ? goods[ entry.$key ].name : null
         },
 
         _getEntryTotal: function (entry, goods) {
-          return goods && goods[entry.$key] ?
-            this._formatPrice(entry.$val * goods[entry.$key].price) : null;
+          return goods && goods[ entry.$key ] ?
+            this._formatPrice(entry.$val * goods[ entry.$key ].price) : null;
         },
 
         _visibleChanged: function (visible) {
@@ -701,7 +701,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           // Reset the UI states
           this._reset();
           // Notify the page's title
-          this.fire('change-section', {title: 'Checkout'});
+          this.fire('change-section', { title: 'Checkout' });
         }
 
       });

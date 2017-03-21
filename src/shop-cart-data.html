@@ -72,17 +72,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         },
 
         setItem: function (detail) {
-          if(this.user) {
+          if (this.user) {
             firebase.database()
-              .ref(`/users/${this.user.uid}/cart/${detail.item}`)
+              .ref('/users/' + this.user.uid + '/cart/' + detail.item)
               .set(detail.quantity > 0 ? detail.quantity : null)
           }
         },
 
         clearCart: function () {
-          if(this.user) {
+          if (this.user) {
             firebase.database()
-              .ref(`/users/${this.user.uid}/cart`)
+              .ref('/users/' + this.user.uid + '/cart')
               .set({});
           }
         },
@@ -100,8 +100,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         _computeTotal: function () {
           if (this.cart && this.goods) {
             console.log('_computeTotal', this.cart, this.goods);
-            return this.cart.reduce((total, entry) => {
-              return total + entry.$val * this.goods[entry.$key].price;
+            return this.cart.reduce(function (total, entry) {
+              return total + entry.$val * this.goods[ entry.$key ].price;
             }, 0);
           }
 
@@ -111,7 +111,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         _getCartEntry: function (goodId) {
           if (this.cart) {
             for (var i = 0; i < this.cart.length; ++i) {
-              var entry = this.cart[i];
+              var entry = this.cart[ i ];
               if (entry.$key === goodId) {
                 return entry;
               }
